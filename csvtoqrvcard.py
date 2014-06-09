@@ -1,7 +1,6 @@
 import qrcode
 import csv
 
-
 with open('/home/switlik/Documents/QR Badges/attendees.csv', 'rb') as csvfp:
     cvsfile = csv.reader(csvfp)
     for row in cvsfile:
@@ -34,12 +33,3 @@ with open('/home/switlik/Documents/QR Badges/attendees.csv', 'rb') as csvfp:
             qr.make()
             im = qr.make_image()
             im.save("attendees/"+lastname+"_"+firstname+".png")
-
-
-#BEGIN:VCARD
-#VERSION:3.0
-#N:Judy Ableser
-#ORG:Oakland University
-#TITLE:Director of Center for Excellence in Teaching and Learning
-#EMAIL:ableser@oakland.edu
-#END:VCARD
