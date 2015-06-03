@@ -24,4 +24,4 @@ Note that Title and Department are not currently used.
 ```
 python qrbadgemaker.py attendees.csv
 ```
-The PDF of the badges will be called "attendees.pdf"
+The PDF of the badges will be named whatever the CSV file was named with .pdf at the end.
