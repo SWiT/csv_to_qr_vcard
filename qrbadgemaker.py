@@ -170,6 +170,8 @@ for row in cvsfile:
 if pagepos != 0:
     pdf.save()
 
+os.remove(imgfile)
+
 print        
 print str(badgecount)+" Badges created in "+filename+".pdf"
 print
