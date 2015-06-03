@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ###About
-QR Badge Maker is a Python script that takes a list of conference attendees in a CSV file and generates B-475 Badges with QR codes in the vcard format.
+QR Badge Maker is a Python script that takes a list of conference attendees in a CSV file and generates B-475 Badges with QR codes in the vcard format. The QR code has a 1" border around it for 1" 'flair' stickers.
 
 ###Setup
 ```
