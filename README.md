@@ -5,7 +5,7 @@ A Python script to take a list of contacts in CSV format and generate QR codes i
 
 INSTALLATION:
 
-  sudo pip install pil qrcode
+  sudo pip install qrcode
 
 The CSV file should be called "attendees.csv" and be formatted with the following column order:
 
