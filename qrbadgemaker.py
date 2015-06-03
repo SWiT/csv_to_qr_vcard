@@ -8,51 +8,57 @@ from reportlab.lib.pagesizes import letter, A4
 
 def displayHelp():
     print "Usage:"
-    print "\tpython "+sys.argv[0]+" [OPTIONS] CSVFILE"
-    print "OPTIONS:"
+    print "\tpython "+sys.argv[0]+" [OPTION] \"EVENTNAME\" \"HASHTAG\" CSVFILE"
+    print "Example:"
+    print "\tpython "+sys.argv[0]+" \"Conference 2015\" \"#Con2015\" attendees.csv"
+    print "OPTION:"
     print "\t--drawtemplate\tdraw the B-475 template lines"
     print ""
-    
-if len(sys.argv) < 2 or len(sys.argv) > 3:
+
+   
+if len(sys.argv) < 4 or len(sys.argv) > 5:
     displayHelp()
     quit()
 
 drawtemplate = False
 if sys.argv[1] == "--drawtemplate":
     drawtemplate = True
-    if len(sys.argv) == 3:
-        csvfile     = sys.argv[2]
+    if len(sys.argv) == 5:
+        eventname   = sys.argv[2]
+        hashtag     = sys.argv[3]
+        csvfile     = sys.argv[4]
     else:
         displayHelp()
         quit()
 else:
-    csvfile     = sys.argv[1]
+    eventname   = sys.argv[1]
+    hashtag     = sys.argv[2]
+    csvfile     = sys.argv[3]
+
 filename    = os.path.splitext(csvfile)[0]
 directory   = filename
 
-eventtitle  = "e-Cornucopia.2015"
-hashtag     = "#ecorn15"
-
 pdf = canvas.Canvas(filename+".pdf", pagesize=letter)
+
 
 def drawBadge(pos):
     # Draw the event title
     pdf.setFont("Helvetica-Bold", 27)
     x = pos[0]
     y = pos[1] - 0.8*inch
-    pdf.drawCentredString(x,y,eventtitle)
+    pdf.drawCentredString(x,y, eventname)
     
     # Draw the attendees name
     pdf.setFont("Helvetica-Bold", 29)
     x = pos[0]
     y = pos[1] - 1.4*inch
-    pdf.drawCentredString(x,y,fullname)
+    pdf.drawCentredString(x,y, fullname)
     
     # Draw the attendees institution
     pdf.setFont("Helvetica", 23)
     x = pos[0]
     y = pos[1] - 1.8*inch
-    pdf.drawCentredString(x,y,institution)
+    pdf.drawCentredString(x,y, institution)
     
     # Draw the QR code
     x = pos[0] - 1.0*inch
@@ -63,7 +69,8 @@ def drawBadge(pos):
     pdf.setFont("Helvetica-Bold", 17)
     x = pos[0]
     y = pos[1] - 5.5*inch
-    pdf.drawCentredString(x,y,hashtag)
+    pdf.drawCentredString(x,y, hashtag)
+
     
 if not os.path.exists(csvfile):
     print "Error: File '"+csvfile+"' not found."
@@ -86,15 +93,8 @@ with open(csvfile, 'rb') as csvfp:
     	firstname = row[0].strip()
         lastname = row[1].strip()
         fullname = firstname+" "+lastname
-        fullname = fullname.strip()
         institution = row[2].strip()
-        title_department = row[3].strip()
-        if title_department != "" and row[4] != "":
-            title_department += ", "
-        title_department += row[4]
-        email = row[5].strip()
-
-        
+        email = row[3].strip()
 
         if fullname != "":
             qrcontent = "BEGIN:VCARD\n"
