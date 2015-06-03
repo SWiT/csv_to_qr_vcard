@@ -70,7 +70,14 @@ def drawBadge(pos):
     x = pos[0]
     y = pos[1] - 5.5*inch
     pdf.drawCentredString(x,y, hashtag)
-
+    
+    # Draw the "made using blurb and url"
+    #pdf.setFont("Helvetica", 11)
+    #x = pos[0]
+    #y = pos[1] - 5.35*inch
+    #pdf.drawCentredString(x,y, "This badge and QR code was made using")
+    #y = pos[1] - 5.5*inch
+    #pdf.drawCentredString(x,y, "https://github.com/swit/qrbadgemaker")
     
 if not os.path.exists(csvfile):
     print "Error: File '"+csvfile+"' not found."
@@ -142,6 +149,8 @@ with open(csvfile, 'rb') as csvfp:
             
     if pagepos != 0:
         pdf.save()
-            
+    
+    print        
     print str(badgecount)+" Badges created in "+filename+".pdf"
+    print
     
