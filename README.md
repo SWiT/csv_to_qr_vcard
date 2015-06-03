@@ -9,8 +9,8 @@ sudo pip install qrcode
 
 wget https://github.com/SWiT/qrbadgemaker/archive/master.zip
 unzip master.zip -d qrbadgemaker
-[OR]
-got clone https://github.com/SWiT/qrbadgemaker.git
+#OR
+git clone https://github.com/SWiT/qrbadgemaker.git
 ```
 
 ###CSV File
