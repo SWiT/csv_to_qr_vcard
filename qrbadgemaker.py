@@ -49,6 +49,12 @@ else:
 
 filename    = os.path.splitext(csvfile)[0]
 
+#check if eventname is an image file
+if os.path.exists(eventname):
+    eventnameusefile = True
+else:
+    eventnameusefile = False
+
 if backcredits:
     pdf = canvas.Canvas("back_credits.pdf", pagesize=letter)
 else:
@@ -66,11 +72,16 @@ def drawBadge(pos, backcredits=False):
         pdf.drawCentredString(x,y, "https://github.com/swit/qrbadgemaker")
         return
     
-    # Draw the event title
-    pdf.setFont("Helvetica-Bold", 27)
-    x = pos[0]
-    y = pos[1] - 0.8*inch
-    pdf.drawCentredString(x,y, eventname)
+    # Draw the event name
+    if eventnameusefile:
+        x = pos[0] - 1.8*inch
+        y = pos[1] - 1.05*inch
+        pdf.drawImage(eventname, x,y, width=3.75*inch, height=0.5*inch, mask='auto')
+    else:
+        pdf.setFont("Helvetica-Bold", 27)
+        x = pos[0]
+        y = pos[1] - 0.8*inch
+        pdf.drawCentredString(x,y, eventname)
     
     # Draw the attendees name
     pdf.setFont("Helvetica-Bold", 29)
