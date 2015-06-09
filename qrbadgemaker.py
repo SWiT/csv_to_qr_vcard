@@ -61,6 +61,24 @@ else:
     pdf = canvas.Canvas(filename+".pdf", pagesize=letter)
 
 
+def drawStringWrap(text, font, fontsize, maxwidth):
+    textlines = []
+    textwidth = pdf.stringWidth(text, font, fontsize)
+    if textwidth/(1*inch) < maxwidth:
+        pdf.drawCentredString(x,y, institution)
+        yoffset = 0
+    else:
+        splitpoint = int(len(institution)/2)
+        splitpoint = institution[splitpoint:].index(" ") + splitpoint
+        inst0 = institution[:splitpoint]
+        inst1 = institution[splitpoint+1:]
+        x = pos[0]
+        y = pos[1] - 1.8*inch
+        pdf.drawCentredString(x,y, inst0)
+        y = pos[1] - 2.15*inch
+        pdf.drawCentredString(x,y, inst1)
+        yoffset = 0.35*inch
+
 def drawBadge(pos, backcredits=False):
     if backcredits:
         # Draw the "made using blurb and url"
@@ -76,7 +94,7 @@ def drawBadge(pos, backcredits=False):
     if eventnameusefile:
         x = pos[0] - 1.8*inch
         y = pos[1] - 1.05*inch
-        pdf.drawImage(eventname, x,y, width=3.75*inch, height=0.5*inch, mask='auto')
+        pdf.drawImage(eventname, x,y, width=3.75*inch, height=0.43*inch, mask='auto')
     else:
         pdf.setFont("Helvetica-Bold", 27)
         x = pos[0]
@@ -85,7 +103,7 @@ def drawBadge(pos, backcredits=False):
     
     # Draw the attendees name
     pdf.setFont("Helvetica-Bold", 29)
-    x = pos[0]
+    x = pos[0] - 0.05*inch
     y = pos[1] - 1.4*inch
     pdf.drawCentredString(x,y, fullname)
     
@@ -93,12 +111,13 @@ def drawBadge(pos, backcredits=False):
     pdf.setFont("Helvetica", 23)
     x = pos[0]
     y = pos[1] - 1.8*inch
-    pdf.drawCentredString(x,y, institution)
+    yoffset = drawStringWrap(institution, "Helvetica", 23, 4.0)
+    
     
     # Draw the QR code
-    x = pos[0] - 1.0*inch
-    y = pos[1]- 3.9*inch
-    pdf.drawInlineImage(imgfile, x,y, width=2.0*inch, height=2.0*inch)
+    x = pos[0] - 1.1*inch
+    y = pos[1]- 4.125*inch - yoffset
+    pdf.drawInlineImage(imgfile, x,y, width=2.2*inch, height=2.2*inch)
     
     # Draw the hashtag
     pdf.setFont("Helvetica-Bold", 17)
@@ -153,6 +172,8 @@ for row in cvsfile:
         
         if drawtemplate:
             # B-475 Template lines
+            pdf.setLineWidth(0.5)
+            pdf.setDash([2,2], 0)
             pdf.line(0,0.125*inch, 8.5*inch,0.125*inch)
             pdf.line(0,5.4375*inch, 8.5*inch,5.4375*inch)
             pdf.line(0,10.625*inch, 8.5*inch,10.625*inch)
