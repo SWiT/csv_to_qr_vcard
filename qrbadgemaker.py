@@ -61,23 +61,24 @@ else:
     pdf = canvas.Canvas(filename+".pdf", pagesize=letter)
 
 
-def drawStringWrap(text, font, fontsize, maxwidth):
-    textlines = []
-    textwidth = pdf.stringWidth(text, font, fontsize)
-    if textwidth/(1*inch) < maxwidth:
-        pdf.drawCentredString(x,y, institution)
-        yoffset = 0
-    else:
-        splitpoint = int(len(institution)/2)
-        splitpoint = institution[splitpoint:].index(" ") + splitpoint
-        inst0 = institution[:splitpoint]
-        inst1 = institution[splitpoint+1:]
-        x = pos[0]
-        y = pos[1] - 1.8*inch
-        pdf.drawCentredString(x,y, inst0)
-        y = pos[1] - 2.15*inch
-        pdf.drawCentredString(x,y, inst1)
-        yoffset = 0.35*inch
+def drawStringWrap(x,y, text, font, fontsize, maxwidth):
+    textlines = [text]
+    i = 0
+    yoffset = 0
+    while i < len(textlines):
+        textwidth = pdf.stringWidth(textlines[i], font, fontsize)
+        if textwidth/(1*inch) < maxwidth:
+            pdf.drawCentredString(x,y, textlines[i])
+            y = y - 0.35*inch
+            i += 1
+        else:
+            splitpoint = int(len(textlines[i])/2)
+            splitpoint = textlines[i][splitpoint:].index(" ") + splitpoint
+            textlines.insert(i+1, textlines[i][splitpoint+1:])
+            textlines[i] = textlines[i][:splitpoint]
+            yoffset += 0.35*inch
+        
+    return yoffset
 
 def drawBadge(pos, backcredits=False):
     if backcredits:
@@ -111,8 +112,7 @@ def drawBadge(pos, backcredits=False):
     pdf.setFont("Helvetica", 23)
     x = pos[0]
     y = pos[1] - 1.8*inch
-    yoffset = drawStringWrap(institution, "Helvetica", 23, 4.0)
-    
+    yoffset = drawStringWrap(x,y, institution, "Helvetica", 23, 4.0)
     
     # Draw the QR code
     x = pos[0] - 1.1*inch
@@ -122,7 +122,7 @@ def drawBadge(pos, backcredits=False):
     # Draw the hashtag
     pdf.setFont("Helvetica-Bold", 17)
     x = pos[0]
-    y = pos[1] - 5.5*inch
+    y = pos[1] - 5.45*inch
     pdf.drawCentredString(x,y, hashtag)
     
 if backcredits:
