@@ -73,7 +73,15 @@ def drawStringWrap(x,y, text, font, fontsize, maxwidth):
             i += 1
         else:
             splitpoint = int(len(textlines[i])/2)
-            splitpoint = textlines[i][splitpoint:].index(" ") + splitpoint
+            try:
+                splitpoint = textlines[i][splitpoint:].index(" ") + splitpoint
+            except ValueError:
+                try:
+                    splitpoint = textlines[i].index(" ")
+                except ValueError:
+                    print "ERROR: \""+textlines[i]+"\" is too long and can't be split."
+                    quit()
+            
             textlines.insert(i+1, textlines[i][splitpoint+1:])
             textlines[i] = textlines[i][:splitpoint]
             yoffset += 0.35*inch
@@ -81,48 +89,49 @@ def drawStringWrap(x,y, text, font, fontsize, maxwidth):
     return yoffset
 
 def drawBadge(pos, backcredits=False):
+    x = pos[0]
+    y = pos[1]
     if backcredits:
         # Draw the "made using blurb and url"
         pdf.setFont("Helvetica", 11)
-        x = pos[0]
-        y = pos[1] - 0.75*inch
+        y -= 0.75*inch
         pdf.drawCentredString(x,y, "This badge and QR code was made using")
-        y = pos[1] - 0.9*inch
+        y -= 0.15*inch
         pdf.drawCentredString(x,y, "https://github.com/swit/qrbadgemaker")
         return
     
     # Draw the event name
     if eventnameusefile:
-        x = pos[0] - 1.8*inch
-        y = pos[1] - 1.05*inch
-        pdf.drawImage(eventname, x,y, width=3.75*inch, height=0.43*inch, mask='auto')
+        y -= 1.05*inch
+        pdf.drawImage(eventname, (x-1.8*inch),y, width=3.75*inch, height=0.43*inch, mask='auto')
     else:
         pdf.setFont("Helvetica-Bold", 27)
-        x = pos[0]
-        y = pos[1] - 0.8*inch
+        y -= 0.8*inch
         pdf.drawCentredString(x,y, eventname)
     
     # Draw the attendees name
     pdf.setFont("Helvetica-Bold", 29)
-    x = pos[0] - 0.05*inch
-    y = pos[1] - 1.4*inch
-    pdf.drawCentredString(x,y, fullname)
+    y -= 0.35*inch
+    yoffset = drawStringWrap((x-0.05*inch),y, fullname, "Helvetica", 29, 4.0)
+    y -= yoffset
     
     # Draw the attendees institution
     pdf.setFont("Helvetica", 23)
-    x = pos[0]
-    y = pos[1] - 1.8*inch
+    y -= 0.35*inch
     yoffset = drawStringWrap(x,y, institution, "Helvetica", 23, 4.0)
+    y -= yoffset
     
     # Draw the QR code
-    x = pos[0] - 1.1*inch
-    y = pos[1]- 4.125*inch - yoffset
-    pdf.drawInlineImage(imgfile, x,y, width=2.2*inch, height=2.2*inch)
+    y -= 2.325*inch
+    pdf.drawInlineImage(imgfile, (x-1.1*inch),y, width=2.2*inch, height=2.2*inch)
+    
+    if (pos[1] - y)/inch > 5.4:
+        print "ERROR: badge for \""+fullname+"\" contains too much information"
+        quit()
     
     # Draw the hashtag
     pdf.setFont("Helvetica-Bold", 17)
-    x = pos[0]
-    y = pos[1] - 5.45*inch
+    y = pos[1] - 5.4*inch
     pdf.drawCentredString(x,y, hashtag)
     
 if backcredits:
