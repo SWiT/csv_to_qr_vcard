@@ -23,13 +23,21 @@ if len(sys.argv) < 2 or len(sys.argv) > 5:
     quit()
 
 drawtemplate = False
-backcredits  = False
+backside  = False
 
 if sys.argv[1] == "--backcredits":
-    backcredits = True
+    backside = True
+    schedule = False
     eventname   = ""
     hashtag     = ""
     csvfile     = "back_credits.csv"
+elif sys.argv[1] == "--backschedule":
+    backside = True
+    schedule = True
+    schedulefile = sys.argv[2]
+    eventname   = ""
+    hashtag     = ""
+    csvfile     = "back_schedule.csv"
 elif sys.argv[1] == "--drawtemplate":
     drawtemplate = True
     if len(sys.argv) == 5:
@@ -55,10 +63,7 @@ if os.path.exists(eventname):
 else:
     eventnameusefile = False
 
-if backcredits:
-    pdf = canvas.Canvas("back_credits.pdf", pagesize=letter)
-else:
-    pdf = canvas.Canvas(filename+".pdf", pagesize=letter)
+pdf = canvas.Canvas(filename+".pdf", pagesize=letter)
 
 
 def drawStringWrap(x,y, text, font, fontsize, maxwidth):
@@ -88,16 +93,37 @@ def drawStringWrap(x,y, text, font, fontsize, maxwidth):
         
     return yoffset
 
-def drawBadge(pos, backcredits=False):
+def drawBadge(pos, backside=False):
     x = pos[0]
     y = pos[1]
-    if backcredits:
+    if backside:
         # Draw the "made using blurb and url"
         pdf.setFont("Helvetica", 11)
         y -= 0.75*inch
         pdf.drawCentredString(x,y, "This badge and QR code was made using")
         y -= 0.15*inch
         pdf.drawCentredString(x,y, "https://github.com/swit/qrbadgemaker")
+
+        # Draw the mini schedule.
+        if schedule:
+            #open the schedulefile
+            global schedulefile
+            schedulefp = open(schedulefile, 'rb')
+            scheduledata = csv.reader(schedulefp)
+            for schedrow in scheduledata:
+                if len(schedrow) <= 0:
+                    continue
+                    
+                if schedrow[0][0] == '#':
+                    continue
+
+                time = schedrow[0].strip()
+                room1 = schedrow[1].strip()
+                room2 = schedrow[2].strip()
+                room3 = schedrow[3].strip()
+
+                y -= 0.20*inch
+                pdf.drawCentredString((x-1.8*inch),y, time)
         return
     
     # Draw the event name
@@ -134,7 +160,7 @@ def drawBadge(pos, backcredits=False):
     y = pos[1] - 5.4*inch
     pdf.drawCentredString(x,y, hashtag)
     
-if backcredits:
+if backside:
     cvsfile = [[".",".",".","."],[".",".",".","."],[".",".",".","."],[".",".",".","."]]
 elif not os.path.exists(csvfile):
     print
@@ -189,7 +215,7 @@ for row in cvsfile:
             pdf.line(4.25*inch,0.125*inch, 4.25*inch,10.625*inch)
         
         # There seems to be a bug in reportlab.
-        # Strings are draw in the A4 template even though we've set the pagesize to letter.
+        # Strings are drawn in the A4 template even though we've set the pagesize to letter.
         # Do text positioning based on A4.
         if pagepos == 0:
             pos = A4[0]/4, A4[1]-0.625*inch
@@ -199,7 +225,7 @@ for row in cvsfile:
             pos = A4[0]/4, A4[1]/2
         elif pagepos == 3:
             pos = A4[0]*3/4+0.25*inch, A4[1]/2
-        drawBadge(pos, backcredits)
+        drawBadge(pos, backside)
             
         if pagepos >= 3:
             pdf.save()
