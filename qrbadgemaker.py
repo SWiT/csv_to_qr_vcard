@@ -6,75 +6,54 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import letter, A4
 
+
+drawtemplate    = False
+schedule        = False
+credit          = False
+backside        = False
+eventname       = ""
+hashtag         = ""
+csvfile         = ""
+pdf             = ""
+
 def displayHelp():
     print "Usage:"
-    print "\tpython "+sys.argv[0]+" [OPTION] \"EVENTNAME\" \"HASHTAG\" CSVFILE"
+    print "\tpython "+sys.argv[0]+" [OPTIONS] CSVFILE"
     print "Example:"
-    print "\tpython "+sys.argv[0]+" \"Conference 2015\" \"#Con2015\" attendees.csv"
+    print "\tpython "+sys.argv[0]+" --event \"Conference 2015\" --hashtag \"#Con2016\" attendees.csv"
     print "OPTIONS:"
-    print "\t--drawtemplate\tdraw the B-475 template lines"
-    print "\t--backcredits\tdraw a back page with credit & URL to QR Badge Maker."
-    print "\t\t\tNo other parameters are required."
+    print "\t--template\t\tdraw the B-475 template lines"
+    print "\t--credits\t\tdraw a back page with credit & URL."
+    print "\t--schedule\t\tdraw a back page with a mini schedule."
+    print "\t--event [\"NAME\"|IMAGE]\tSet the event name on the badge."
+    print "\t--hashtag \"#HASHTAG\"\tSet the hashtag on the badge."
     print ""
 
-   
-if len(sys.argv) < 2 or len(sys.argv) > 5:
-    displayHelp()
-    quit()
+def drawTemplateLines():
+    # B-475 Template lines
+    global inch, pdf
+    pdf.setLineWidth(0.5)
+    pdf.setDash([2,2], 0)
+    pdf.line(0,0.125*inch, 8.5*inch,0.125*inch)
+    pdf.line(0,5.4375*inch, 8.5*inch,5.4375*inch)
+    pdf.line(0,10.625*inch, 8.5*inch,10.625*inch)
+    pdf.line(4.25*inch,0.125*inch, 4.25*inch,10.625*inch)
 
-drawtemplate = False
-backside  = False
-
-if sys.argv[1] == "--backcredits":
-    backside = True
-    schedule = False
-    eventname   = ""
-    hashtag     = ""
-    csvfile     = "back_credits.csv"
-elif sys.argv[1] == "--backschedule":
-    backside = True
-    schedule = True
-    schedulefile = sys.argv[2]
-    eventname   = ""
-    hashtag     = ""
-    csvfile     = "back_schedule.csv"
-elif sys.argv[1] == "--drawtemplate":
-    drawtemplate = True
-    if len(sys.argv) == 5:
-        eventname   = sys.argv[2]
-        hashtag     = sys.argv[3]
-        csvfile     = sys.argv[4]
-    else:
-        displayHelp()
-        quit()
-elif len(sys.argv) == 4:
-    eventname   = sys.argv[1]
-    hashtag     = sys.argv[2]
-    csvfile     = sys.argv[3]
-else:
-    displayHelp()
-    quit()
-
-filename    = os.path.splitext(csvfile)[0]
-
-#check if eventname is an image file
-if os.path.exists(eventname):
-    eventnameusefile = True
-else:
-    eventnameusefile = False
-
-pdf = canvas.Canvas(filename+".pdf", pagesize=letter)
-
-
-def drawStringWrap(x,y, text, font, fontsize, maxwidth):
+def drawStringWrap(x,y, text, font, fontsize, maxwidth, lineheight, position = ""):
     textlines = [text]
     i = 0
     yoffset = 0
     while i < len(textlines):
         textwidth = pdf.stringWidth(textlines[i], font, fontsize)
         if textwidth/(1*inch) < maxwidth:
-            pdf.drawCentredString(x,y, textlines[i])
-            y = y - 0.35*inch
+            if position == "center":
+                pdf.drawCentredString(x,y, textlines[i])
+            elif position == "right":
+                pdf.drawRightString(x,y, textlines[i])
+            else:
+                pdf.drawString(x,y, textlines[i])
+
+            y = y - lineheight * inch
             i += 1
         else:
             splitpoint = int(len(textlines[i])/2)
@@ -89,93 +68,173 @@ def drawStringWrap(x,y, text, font, fontsize, maxwidth):
             
             textlines.insert(i+1, textlines[i][splitpoint+1:])
             textlines[i] = textlines[i][:splitpoint]
-            yoffset += 0.35*inch
+            yoffset += lineheight * inch
         
     return yoffset
 
-def drawBadge(pos, backside=False):
+def drawBadge(pos):
     x = pos[0]
     y = pos[1]
     if backside:
-        # Draw the "made using blurb and url"
-        pdf.setFont("Helvetica", 11)
         y -= 0.75*inch
-        pdf.drawCentredString(x,y, "This badge and QR code was made using")
-        y -= 0.15*inch
-        pdf.drawCentredString(x,y, "https://github.com/swit/qrbadgemaker")
+        pdf.setFont("Helvetica", 11)
+
+        # Draw the "made using blurb and url"
+        if credit:
+            pdf.drawCentredString(x,y, "This badge and QR code was made using")
+            y -= 0.15*inch
+            pdf.drawCentredString(x,y, "https://github.com/swit/qrbadgemaker")
 
         # Draw the mini schedule.
         if schedule:
+            pdf.setLineWidth(0.5)
+            pdf.setDash([1,1], 0)
+            lineheight = 0.15
+            fontsize = 10
             #open the schedulefile
-            global schedulefile
-            schedulefp = open(schedulefile, 'rb')
+            global csvfile
+            schedulefp = open(csvfile, 'rb')
             scheduledata = csv.reader(schedulefp)
-            for schedrow in scheduledata:
-                if len(schedrow) <= 0:
+            for srow in scheduledata:
+                if len(srow) <= 0:
                     continue
                     
-                if schedrow[0][0] == '#':
+                if srow[0][0] == '#':
                     continue
 
-                time = schedrow[0].strip()
-                room1 = schedrow[1].strip()
-                room2 = schedrow[2].strip()
-                room3 = schedrow[3].strip()
+                starttime   = srow[0].strip()
+                room1       = srow[1].strip()
+                room2       = srow[2].strip()
+                room3       = srow[3].strip()
 
-                y -= 0.20*inch
-                pdf.drawCentredString((x-1.8*inch),y, time)
-        return
+                y -= lineheight * inch
+                
+                yoffset = 0                
+                
+                yoffset = max(yoffset, drawStringWrap((x-2.0*inch),y, starttime, "Helvetica", fontsize, 0.4, lineheight))
+                pdf.drawString(x,y, eventname)
+
+                if room2 == "" and room3 == "":
+                    yoffset = max(yoffset, drawStringWrap((x-1.55*inch),y, room1, "Helvetica", fontsize, 3.5, lineheight))
+                else:    
+                    yoffset = max(yoffset, drawStringWrap((x-1.5*inch),y, room1, "Helvetica", fontsize, 1.0, lineheight))
+                    yoffset = max(yoffset, drawStringWrap((x-0.3*inch),y, room2, "Helvetica", fontsize, 1.0, lineheight))
+                    yoffset = max(yoffset, drawStringWrap((x+1.0*inch),y, room3, "Helvetica", fontsize, 1.0, lineheight))
+
+                pdf.line((x-1.6*inch), (y + lineheight * inch), (x-1.6*inch), (y-yoffset))
+                if room2 != "":                
+                    pdf.line((x-0.35*inch), (y + lineheight * inch), (x-0.35*inch), (y-yoffset)) 
+                if room3 != "":
+                    pdf.line((x+0.95*inch), (y + lineheight * inch), (x+0.95*inch), (y-yoffset))                
+
+                y -= yoffset
     
-    # Draw the event name
-    if eventnameusefile:
-        y -= 1.05*inch
-        pdf.drawImage(eventname, (x-1.8*inch),y, width=3.75*inch, height=0.43*inch, mask='auto')
+                y -= 2
+                pdf.line(0, y, 8.5*inch, y)
+                
+
     else:
-        pdf.setFont("Helvetica-Bold", 27)
-        y -= 0.8*inch
-        pdf.drawCentredString(x,y, eventname)
-    
-    # Draw the attendees name
-    pdf.setFont("Helvetica-Bold", 29)
-    y -= 0.35*inch
-    yoffset = drawStringWrap((x-0.05*inch),y, fullname, "Helvetica", 29, 4.0)
-    y -= yoffset
-    
-    # Draw the attendees institution
-    pdf.setFont("Helvetica", 23)
-    y -= 0.35*inch
-    yoffset = drawStringWrap(x,y, institution, "Helvetica", 23, 4.0)
-    y -= yoffset
-    
-    # Draw the QR code
-    y -= 2.325*inch
-    pdf.drawInlineImage(imgfile, (x-1.1*inch),y, width=2.2*inch, height=2.2*inch)
-    
-    if (pos[1] - y)/inch > 5.4:
-        print "ERROR: badge for \""+fullname+"\" contains too much information"
-        quit()
-    
-    # Draw the hashtag
-    pdf.setFont("Helvetica-Bold", 17)
-    y = pos[1] - 5.4*inch
-    pdf.drawCentredString(x,y, hashtag)
-    
-if backside:
-    cvsfile = [[".",".",".","."],[".",".",".","."],[".",".",".","."],[".",".",".","."]]
-elif not os.path.exists(csvfile):
+        # Draw the event name
+        if eventnameusefile:
+            y -= 1.05*inch
+            pdf.drawImage(eventname, (x-1.8*inch),y, width=3.75*inch, height=0.43*inch, mask='auto')
+        else:
+            pdf.setFont("Helvetica-Bold", 27)
+            y -= 0.8*inch
+            pdf.drawCentredString(x,y, eventname)
+        
+        # Draw the attendees name
+        pdf.setFont("Helvetica-Bold", 29)
+        y -= 0.60*inch
+        yoffset = drawStringWrap((x-0.05*inch),y, fullname, "Helvetica", 29, 4.0, 0.35, "center")
+        y -= yoffset
+        
+        # Draw the attendees institution
+        pdf.setFont("Helvetica", 23)
+        y -= 0.35*inch
+        yoffset = drawStringWrap(x,y, institution, "Helvetica", 23, 4.0, 0.35, "center")
+        y -= yoffset
+        
+        # Draw the QR code
+        y -= 2.325*inch
+        pdf.drawInlineImage(imgfile, (x-1.1*inch),y, width=2.2*inch, height=2.2*inch)
+        
+        if (pos[1] - y)/inch > 5.4:
+            print "ERROR: badge for \""+fullname+"\" contains too much information"
+            quit()
+        
+        # Draw the hashtag
+        pdf.setFont("Helvetica-Bold", 17)
+        y = pos[1] - 5.4*inch
+        pdf.drawCentredString(x,y, hashtag)
+    return
+
+
+
+
+
+#----------------------------
+# Main Program Begins
+#----------------------------
+
+# Parse options and parameters.
+for index, arg in enumerate(sys.argv):
+    if arg == "--credit":
+        backside = True
+        credit = True
+
+    elif arg == "--schedule":
+        backside = True
+        schedule = True
+
+    elif arg == "--template":   
+        drawtemplate = True
+
+    elif arg == "--event":   
+        eventname = sys.argv[index+1]
+
+    elif arg == "--hashtag":   
+        hashtag = sys.argv[index+1]
+
+    elif os.path.splitext(arg)[1] == ".csv":
+        csvfile = arg
+     
+# Validate options and parameters or display help.
+error = False
+if csvfile == "" and backside == False:
+    error = True
+elif csvfile != "" and not os.path.exists(csvfile):
     print
     print "ERROR: File '"+csvfile+"' not found."
     print
+    error = True
+
+if error:
     displayHelp()
     quit()
+
+
+# Split off the filename for output.
+filename = os.path.splitext(csvfile)[0]
+
+# Check if eventname is an image file.
+if os.path.exists(eventname):
+    eventnameusefile = True
 else:
-    csvfp = open(csvfile, 'rb')
-    cvsfile = csv.reader(csvfp)
+    eventnameusefile = False
+
+pdf = canvas.Canvas(filename+".pdf", pagesize=letter)
+    
+if backside:
+    namesdata = [[".",".",".","."],[".",".",".","."],[".",".",".","."],[".",".",".","."]]
+else:
+    namesfp = open(csvfile, 'rb')
+    namesdata = csv.reader(namesfp)
 
 pagepos = 0
 badgecount = 0
 
-for row in cvsfile:
+for row in namesdata:
     if len(row) <= 0:
         continue
         
@@ -187,6 +246,9 @@ for row in cvsfile:
     fullname = firstname+" "+lastname
     institution = row[2].strip()
     email = row[3].strip()
+
+    if drawtemplate:
+        drawTemplateLines()
 
     if fullname != "":
         qrcontent = "BEGIN:VCARD\n"
@@ -205,15 +267,6 @@ for row in cvsfile:
         imgfile = "temp.png"
         im.save(imgfile)
         
-        if drawtemplate:
-            # B-475 Template lines
-            pdf.setLineWidth(0.5)
-            pdf.setDash([2,2], 0)
-            pdf.line(0,0.125*inch, 8.5*inch,0.125*inch)
-            pdf.line(0,5.4375*inch, 8.5*inch,5.4375*inch)
-            pdf.line(0,10.625*inch, 8.5*inch,10.625*inch)
-            pdf.line(4.25*inch,0.125*inch, 4.25*inch,10.625*inch)
-        
         # There seems to be a bug in reportlab.
         # Strings are drawn in the A4 template even though we've set the pagesize to letter.
         # Do text positioning based on A4.
@@ -225,7 +278,8 @@ for row in cvsfile:
             pos = A4[0]/4, A4[1]/2
         elif pagepos == 3:
             pos = A4[0]*3/4+0.25*inch, A4[1]/2
-        drawBadge(pos, backside)
+
+        drawBadge(pos)
             
         if pagepos >= 3:
             pdf.save()
