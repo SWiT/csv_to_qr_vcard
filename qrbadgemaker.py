@@ -43,6 +43,7 @@ def drawStringWrap(x,y, text, font, fontsize, maxwidth, lineheight, position = "
     textlines = [text]
     i = 0
     yoffset = 0
+    pdf.setFont(font, fontsize)
     while i < len(textlines):
         textwidth = pdf.stringWidth(textlines[i], font, fontsize)
         if textwidth/(1*inch) < maxwidth:
@@ -95,11 +96,11 @@ def drawBadge(pos):
             global csvfile
             schedulefp = open(csvfile, 'rb')
             scheduledata = csv.reader(schedulefp)
-            for srow in scheduledata:
+            for index,srow in enumerate(scheduledata):
                 if len(srow) <= 0:
                     continue
                     
-                if srow[0][0] == '#':
+                if len(srow[0]) > 0 and srow[0][0] == '#':
                     continue
 
                 starttime   = srow[0].strip()
@@ -107,21 +108,29 @@ def drawBadge(pos):
                 room2       = srow[2].strip()
                 room3       = srow[3].strip()
 
+                if index == 0:
+                    fonttype = "Helvetica-Bold"    
+                else:
+                    fonttype = "Helvetica"            
+
                 y -= lineheight * inch
-                
-                yoffset = 0                
-                
-                yoffset = max(yoffset, drawStringWrap((x-2.0*inch),y, starttime, "Helvetica", fontsize, 0.4, lineheight))
+                                
+                yoffset = 0                                
+                # Draw the Start time.
+                yoffset = max(yoffset, drawStringWrap((x-1.65*inch),y, starttime, "Helvetica", fontsize, 0.4, lineheight, "right"))
                 pdf.drawString(x,y, eventname)
 
+                # Draw the titles of the presentations.
                 if room2 == "" and room3 == "":
-                    yoffset = max(yoffset, drawStringWrap((x-1.55*inch),y, room1, "Helvetica", fontsize, 3.5, lineheight))
+                    yoffset = max(yoffset, drawStringWrap((x-1.55*inch),y, room1, fonttype, fontsize, 3.5, lineheight))
                 else:    
-                    yoffset = max(yoffset, drawStringWrap((x-1.5*inch),y, room1, "Helvetica", fontsize, 1.0, lineheight))
-                    yoffset = max(yoffset, drawStringWrap((x-0.3*inch),y, room2, "Helvetica", fontsize, 1.0, lineheight))
-                    yoffset = max(yoffset, drawStringWrap((x+1.0*inch),y, room3, "Helvetica", fontsize, 1.0, lineheight))
-
-                pdf.line((x-1.6*inch), (y + lineheight * inch), (x-1.6*inch), (y-yoffset))
+                    yoffset = max(yoffset, drawStringWrap((x-1.5*inch),y, room1, fonttype, fontsize, 1.0, lineheight))
+                    yoffset = max(yoffset, drawStringWrap((x-0.3*inch),y, room2, fonttype, fontsize, 1.0, lineheight))
+                    yoffset = max(yoffset, drawStringWrap((x+1.0*inch),y, room3, fonttype, fontsize, 1.0, lineheight))
+                
+                # Draw the vertical lines in this row
+                if room1 != "":
+                    pdf.line((x-1.6*inch), (y + lineheight * inch), (x-1.6*inch), (y-yoffset))
                 if room2 != "":                
                     pdf.line((x-0.35*inch), (y + lineheight * inch), (x-0.35*inch), (y-yoffset)) 
                 if room3 != "":
@@ -129,10 +138,17 @@ def drawBadge(pos):
 
                 y -= yoffset
     
+                # Draw the horizontal line under this row.
                 y -= 2
                 pdf.line(0, y, 8.5*inch, y)
                 
-
+        #All day events
+        y -= 2.25 * lineheight * inch
+        drawStringWrap((x-2.0*inch),y, "The VR Experience: Sign up for sesssions in Room 125", fonttype, fontsize, 4.0, lineheight)
+        y -= lineheight * inch
+        drawStringWrap((x-2.0*inch),y, "8:30am - 4:15pm", fonttype, fontsize, 4.0, lineheight)
+       
+ 
     else:
         # Draw the event name
         if eventnameusefile:
