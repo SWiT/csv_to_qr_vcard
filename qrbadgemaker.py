@@ -77,7 +77,7 @@ def drawBadge(pos):
     x = pos[0]
     y = pos[1]
     if backside:
-        y -= 0.75*inch
+        y -= 0.60*inch
         pdf.setFont("Helvetica", 11)
 
         # Draw the "made using blurb and url"
@@ -89,7 +89,7 @@ def drawBadge(pos):
         # Draw the mini schedule.
         if schedule:
             pdf.setLineWidth(0.5)
-            pdf.setDash([1,1], 0)
+            pdf.setDash([1,0], 0)
             lineheight = 0.15
             fontsize = 10
 
@@ -122,11 +122,8 @@ def drawBadge(pos):
                                 
                 yoffset = 0                                
                 # Draw the Start time.
-                yoffset = max(yoffset, drawStringWrap((x-1.65*inch),y, starttime, "Helvetica", fontsize, 0.4, lineheight, "right"))
-                pdf.drawString(x,y, eventname)
-
-                
-                    
+                yoffset = max(yoffset, drawStringWrap((x-1.62*inch),y, starttime, "Helvetica", fontsize, 0.4, lineheight, "right"))
+                pdf.drawString(x,y, eventname)                    
 
                 # Draw the titles of the presentations.
                 # Compare to the previous row.                
@@ -143,11 +140,11 @@ def drawBadge(pos):
                 
                 # Draw the vertical lines in this row
                 if room1 != "":
-                    pdf.line((x-1.6*inch), (y + lineheight * inch), (x-1.6*inch), (y-yoffset))
+                    pdf.line((x-1.6*inch), (y + lineheight * inch), (x-1.6*inch), (y-yoffset-2))
                 if room2 != "":                
-                    pdf.line((x-0.35*inch), (y + lineheight * inch), (x-0.35*inch), (y-yoffset)) 
+                    pdf.line((x-0.35*inch), (y + lineheight * inch), (x-0.35*inch), (y-yoffset-2)) 
                 if room3 != "":
-                    pdf.line((x+0.95*inch), (y + lineheight * inch), (x+0.95*inch), (y-yoffset))                
+                    pdf.line((x+0.95*inch), (y + lineheight * inch), (x+0.95*inch), (y-yoffset-2))                
                 
                 y -= yoffset
     
@@ -173,10 +170,10 @@ def drawBadge(pos):
         pdf.line((x-2.0*inch), y, (x+2.0*inch), y)
 
         #All day events
-        y -= 2.25 * lineheight * inch
-        drawStringWrap((x-2.0*inch),y, "The VR Experience: Sign up for sesssions in Room 125", fonttype, fontsize, 4.0, lineheight)
+        y -= 1.65 * lineheight * inch
+        drawStringWrap((x-1.9*inch),y, "The VR Experience: Sign up for sesssions in Room 125", fonttype, fontsize, 4.0, lineheight)
         y -= lineheight * inch
-        drawStringWrap((x-2.0*inch),y, "8:30am - 4:15pm", fonttype, fontsize, 4.0, lineheight)
+        drawStringWrap((x-1.9*inch),y, "8:30am - 4:15pm", fonttype, fontsize, 4.0, lineheight)
        
  
     else:
