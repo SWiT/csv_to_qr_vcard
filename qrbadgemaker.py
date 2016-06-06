@@ -62,7 +62,8 @@ def drawStringWrap(x,y, text, font, fontsize, maxwidth, lineheight, position = "
                 splitpoint = textlines[i][splitpoint:].index(" ") + splitpoint
             except ValueError:
                 try:
-                    splitpoint = textlines[i].index(" ")
+                    splitpoint = textlines[i].rfind(" ")
+                    
                 except ValueError:
                     print "ERROR: \""+textlines[i]+"\" is too long and can't be split."
                     quit()
