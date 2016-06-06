@@ -201,7 +201,8 @@ def drawBadge(pos):
         
         # Draw the QR code
         y -= 2.325*inch
-        pdf.drawInlineImage(imgfile, (x-1.1*inch),y, width=2.2*inch, height=2.2*inch)
+        if fullname.strip() != "":
+            pdf.drawInlineImage(imgfile, (x-1.1*inch),y, width=2.2*inch, height=2.2*inch)
         
         if (pos[1] - y)/inch > 5.4:
             print "ERROR: badge for \""+fullname+"\" contains too much information"

@@ -1,6 +1,6 @@
 QR Badge Maker
 ===============
-Copyright (C) 2015 Matthew Gary Switlik
+Copyright (C) 2016 Matthew Gary Switlik
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@ First Name, Last Name, Institution, Email Address
 
 ###Run
 ```
-python qrbadgemaker.py "Conference 2015" "#Con2015" attendees.csv
+python qrbadgemaker.py --event "Conference 2016" --hashtag "#Con2016" attendees.csv
+python qrbadgemaker.py --schedule schedule.csv
 ```
 The PDF of the badges will be named whatever the CSV file was named with .pdf at the end.
