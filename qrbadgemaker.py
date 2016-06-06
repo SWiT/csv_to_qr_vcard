@@ -92,6 +92,11 @@ def drawBadge(pos):
             pdf.setDash([1,1], 0)
             lineheight = 0.15
             fontsize = 10
+
+            prevroom1   = ""
+            prevroom2   = ""
+            prevroom3   = ""
+
             #open the schedulefile
             global csvfile
             schedulefp = open(csvfile, 'rb')
@@ -120,13 +125,21 @@ def drawBadge(pos):
                 yoffset = max(yoffset, drawStringWrap((x-1.65*inch),y, starttime, "Helvetica", fontsize, 0.4, lineheight, "right"))
                 pdf.drawString(x,y, eventname)
 
+                
+                    
+
                 # Draw the titles of the presentations.
+                # Compare to the previous row.                
                 if room2 == "" and room3 == "":
-                    yoffset = max(yoffset, drawStringWrap((x-1.55*inch),y, room1, fonttype, fontsize, 3.5, lineheight))
-                else:    
-                    yoffset = max(yoffset, drawStringWrap((x-1.5*inch),y, room1, fonttype, fontsize, 1.0, lineheight))
-                    yoffset = max(yoffset, drawStringWrap((x-0.3*inch),y, room2, fonttype, fontsize, 1.0, lineheight))
-                    yoffset = max(yoffset, drawStringWrap((x+1.0*inch),y, room3, fonttype, fontsize, 1.0, lineheight))
+                    if room1 != prevroom1:
+                        yoffset = max(yoffset, drawStringWrap((x-1.55*inch),y, room1, fonttype, fontsize, 3.5, lineheight))
+                else:
+                    if room1 != prevroom1:
+                        yoffset = max(yoffset, drawStringWrap((x-1.5*inch),y, room1, fonttype, fontsize, 1.0, lineheight))
+                    if room2 != prevroom2:
+                        yoffset = max(yoffset, drawStringWrap((x-0.3*inch),y, room2, fonttype, fontsize, 1.0, lineheight))
+                    if room3 != prevroom3:
+                        yoffset = max(yoffset, drawStringWrap((x+1.0*inch),y, room3, fonttype, fontsize, 1.0, lineheight))
                 
                 # Draw the vertical lines in this row
                 if room1 != "":
@@ -135,13 +148,30 @@ def drawBadge(pos):
                     pdf.line((x-0.35*inch), (y + lineheight * inch), (x-0.35*inch), (y-yoffset)) 
                 if room3 != "":
                     pdf.line((x+0.95*inch), (y + lineheight * inch), (x+0.95*inch), (y-yoffset))                
-
+                
                 y -= yoffset
     
-                # Draw the horizontal line under this row.
+                # Draw the horizontal lines above this row.
+                # Unless its the first row
                 y -= 2
-                pdf.line(0, y, 8.5*inch, y)
-                
+                if index != 0:
+                    above = (y + yoffset + (lineheight * inch) + 2)
+                    pdf.line((x-2.0*inch), above, (x-1.6*inch), above)
+                    if room1 != prevroom1 or room1 == "":
+                        pdf.line((x-1.6*inch), above, (x-0.35*inch), above)
+                    if room2 != prevroom2 or room2 == "":
+                        pdf.line((x-0.35*inch), above, (x+0.95*inch), above)
+                    if room3 != prevroom3 or room3 == "":
+                        pdf.line((x+0.95*inch), above, (x+2.0*inch), above)
+
+                # Set this row as previous.
+                prevroom1   = room1
+                prevroom2   = room2
+                prevroom3   = room3
+
+        # Draw a line after the schedule.
+        pdf.line((x-2.0*inch), y, (x+2.0*inch), y)
+
         #All day events
         y -= 2.25 * lineheight * inch
         drawStringWrap((x-2.0*inch),y, "The VR Experience: Sign up for sesssions in Room 125", fonttype, fontsize, 4.0, lineheight)
