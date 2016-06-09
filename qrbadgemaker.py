@@ -190,7 +190,7 @@ def drawBadge(pos):
         # Draw the attendees name
         pdf.setFont("Helvetica-Bold", 29)
         y -= 0.60*inch
-        yoffset = drawStringWrap((x-0.05*inch),y, fullname, "Helvetica", 29, 4.0, 0.35, "center")
+        yoffset = drawStringWrap((x-0.0*inch),y, fullname, "Helvetica", 29, 4.0, 0.35, "center")
         y -= yoffset
         
         # Draw the attendees institution
