@@ -15,6 +15,7 @@ eventname       = ""
 hashtag         = ""
 csvfile         = ""
 pdf             = ""
+badgeformat     = "B475"
 
 def displayHelp():
     print "Usage:"
@@ -22,22 +23,37 @@ def displayHelp():
     print "Example:"
     print "\tpython "+sys.argv[0]+" --event \"Conference 2015\" --hashtag \"#Con2016\" attendees.csv"
     print "OPTIONS:"
-    print "\t--template\t\tdraw the B-475 template lines"
-    print "\t--credits\t\tdraw a back page with credit & URL."
-    print "\t--schedule\t\tdraw a back page with a mini schedule."
+    print "\t--template\t\tDraw the template lines"
+    print "\t--format [B475|B628]\tBadge format to use [Default:B475]"
+    print "\t--credits\t\tDraw a back page with credit & URL."
+    print "\t--schedule\t\tDraw a back page with a mini schedule."
     print "\t--event [\"NAME\"|IMAGE]\tSet the event name on the badge."
     print "\t--hashtag \"#HASHTAG\"\tSet the hashtag on the badge."
     print ""
 
+
 def drawTemplateLines():
-    # B-475 Template lines
     global inch, pdf
     pdf.setLineWidth(0.5)
     pdf.setDash([2,2], 0)
-    pdf.line(0,0.125*inch, 8.5*inch,0.125*inch)
-    pdf.line(0,5.4375*inch, 8.5*inch,5.4375*inch)
-    pdf.line(0,10.625*inch, 8.5*inch,10.625*inch)
-    pdf.line(4.25*inch,0.125*inch, 4.25*inch,10.625*inch)
+    print "inch",inch
+    if badgeformat == "B475":
+        # B-475 Template lines
+        pdf.line(0,0.125*inch, 8.5*inch,0.125*inch)             # bottom margin
+        pdf.line(0,5.4375*inch, 8.5*inch,5.4375*inch)           # horizontal middle divide
+        pdf.line(0,10.625*inch, 8.5*inch,10.625*inch)           # top margin
+        pdf.line(4.25*inch,0.125*inch, 4.25*inch,10.625*inch)   # vertical middle divide
+    elif badgeformat == "B628":
+        # B-628 Template lines
+        pdf.line(0.5*inch,1*inch, 7.5*inch,1*inch)           # top margin
+#        pdf.line(0,8.625*inch, 8.5*inch,8.625*inch)             # ticket 1
+#        pdf.line(0,6.625*inch, 8.5*inch,6.625*inch)             # ticket 2
+#        pdf.line(0,0.625*inch, 8.5*inch,0.625*inch)             # bottom margin
+#
+#        pdf.line(0.0*inch,0.125*inch, 0.0*inch,10.625*inch)     # left margin
+#        pdf.line(4.25*inch,0.125*inch, 4.25*inch,10.625*inch)   # vertical middle divide
+#        pdf.line(8.5*inch,0.125*inch, 8.5*inch,10.625*inch)     # right margin
+
 
 def drawStringWrap(x,y, text, font, fontsize, maxwidth, lineheight, position = ""):
     textlines = [text]
@@ -73,6 +89,7 @@ def drawStringWrap(x,y, text, font, fontsize, maxwidth, lineheight, position = "
             yoffset += lineheight * inch
         
     return yoffset
+
 
 def drawBadge(pos):
     x = pos[0]
@@ -216,7 +233,7 @@ def drawBadge(pos):
 
 
 
-
+inch = inch * 1.00
 
 #----------------------------
 # Main Program Begins
@@ -232,7 +249,10 @@ for index, arg in enumerate(sys.argv):
         backside = True
         schedule = True
 
-    elif arg == "--template":   
+    elif arg == "--format":
+        badgeformat = sys.argv[index+1]
+
+    elif arg == "--template":
         drawtemplate = True
 
     elif arg == "--event":   
@@ -269,7 +289,8 @@ else:
     eventnameusefile = False
 
 pdf = canvas.Canvas(filename+".pdf", pagesize=letter)
-    
+#pdf.translate(inch, inch)
+
 if backside:
     namesdata = [[".",".",".","."],[".",".",".","."],[".",".",".","."],[".",".",".","."]]
 else:
@@ -292,8 +313,7 @@ for row in namesdata:
     institution = row[2].strip()
     email = row[3].strip()
 
-    if drawtemplate:
-        drawTemplateLines()
+    
 
     if fullname != "":
         qrcontent = "BEGIN:VCARD\n"
@@ -327,6 +347,8 @@ for row in namesdata:
         drawBadge(pos)
             
         if pagepos >= 3:
+            if drawtemplate:
+                drawTemplateLines()
             pdf.save()
             pagepos = -1
         
@@ -334,6 +356,8 @@ for row in namesdata:
         badgecount += 1
         
 if pagepos != 0:
+    if drawtemplate:
+        drawTemplateLines()
     pdf.save()
 
 os.remove(imgfile)

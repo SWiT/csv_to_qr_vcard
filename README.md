@@ -20,6 +20,7 @@ QR Badge Maker is a Python script that takes a list of conference attendees in a
 
 ###Setup
 ```
+sudo apt-get install python-reportlab
 sudo pip install qrcode
 
 wget https://github.com/SWiT/qrbadgemaker/archive/master.zip
