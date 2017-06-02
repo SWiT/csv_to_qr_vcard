@@ -35,7 +35,7 @@ def displayHelp():
 def drawTemplateLines():
     global inch, pdf
     pdf.setLineWidth(0.5)
-    pdf.setDash([2,2], 0)
+    #pdf.setDash([2,2], 0)
     print "inch",inch
     if badgeformat == "B475":
         # B-475 Template lines
@@ -44,15 +44,27 @@ def drawTemplateLines():
         pdf.line(0,10.625*inch, 8.5*inch,10.625*inch)           # top margin
         pdf.line(4.25*inch,0.125*inch, 4.25*inch,10.625*inch)   # vertical middle divide
     elif badgeformat == "B628":
-        # B-628 Template lines
-        pdf.line(0.5*inch,1*inch, 7.5*inch,1*inch)           # top margin
-#        pdf.line(0,8.625*inch, 8.5*inch,8.625*inch)             # ticket 1
-#        pdf.line(0,6.625*inch, 8.5*inch,6.625*inch)             # ticket 2
-#        pdf.line(0,0.625*inch, 8.5*inch,0.625*inch)             # bottom margin
+#        # B-628 Template lines
+#        pdf.line(0*inch, 10*inch, 8.5*inch, 10*inch)           # top margin
+#        pdf.line(0*inch, 8*inch, 8.5*inch, 8*inch)             # ticket 1
+#        pdf.line(0*inch, 6*inch, 8.5*inch, 6*inch)             # ticket 2
+#        pdf.line(0*inch, 0.5*inch, 8.5*inch, 0.5*inch)         # bottom margin
 #
-#        pdf.line(0.0*inch,0.125*inch, 0.0*inch,10.625*inch)     # left margin
-#        pdf.line(4.25*inch,0.125*inch, 4.25*inch,10.625*inch)   # vertical middle divide
-#        pdf.line(8.5*inch,0.125*inch, 8.5*inch,10.625*inch)     # right margin
+#        pdf.line(0.25*inch, 0*inch, 0.25*inch, 10.5*inch)     # left margin
+#        pdf.line(4.25*inch, 0*inch, 4.25*inch, 10.5*inch)   # vertical middle divide
+#        pdf.line(8.00*inch, 0*inch, 8.00*inch, 10.5*inch)     # right margin
+
+
+        
+        #TEST LINES
+        maxx = 8.0
+        minx = 0.0
+        maxy = 10.25
+        miny = 0.0
+        pdf.line(minx*inch, miny*inch, minx*inch, maxy*inch)
+        pdf.line(minx*inch, maxy*inch, maxx*inch, maxy*inch)
+        pdf.line(maxx*inch, maxy*inch, maxx*inch, miny*inch)
+        pdf.line(maxx*inch, miny*inch, minx*inch, miny*inch)
 
 
 def drawStringWrap(x,y, text, font, fontsize, maxwidth, lineheight, position = ""):
@@ -233,8 +245,6 @@ def drawBadge(pos):
 
 
 
-inch = inch * 1.00
-
 #----------------------------
 # Main Program Begins
 #----------------------------
@@ -289,7 +299,8 @@ else:
     eventnameusefile = False
 
 pdf = canvas.Canvas(filename+".pdf", pagesize=letter)
-#pdf.translate(inch, inch)
+inch = inch * 1.05  # Adjust what defines an inch.
+pdf.translate((-3.0/16*inch), (-9.0/32*inch))
 
 if backside:
     namesdata = [[".",".",".","."],[".",".",".","."],[".",".",".","."],[".",".",".","."]]
