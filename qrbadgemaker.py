@@ -8,15 +8,16 @@ from reportlab.lib.pagesizes import letter, A4
 
 class qrbadgemaker:
     def __init__(self):
-        self.drawtemplate    = False
-        self.schedule        = False
-        self.credit          = False
-        self.backside        = False
-        self.eventname       = ""
-        self.hashtag         = ""
-        self.csvfile         = ""
-        self.pdf             = ""
-        self.badgeformat     = "B475"
+        self.drawtemplate   = False
+        self.schedule       = False
+        self.credit         = False
+        self.backside       = False
+        self.eventname      = ""
+        self.hashtag        = ""
+        self.csvfile        = ""
+        self.pdf            = ""
+        self.badgeformat    = "B475"
+        self.badgesperpage  = 4
 
     def displayHelp(self):
         print "Usage:"
@@ -37,7 +38,6 @@ class qrbadgemaker:
         self.pdf.setLineWidth(0.5)
         self.pdf.setDash([2,2], 0)
         self.pdf.setStrokeColorRGB(0.85,0.85,0.85)
-        print "inch",inch
         if self.badgeformat == "B475":
             # B-475 Template lines
             self.pdf.line(0,0.125*inch, 8.5*inch,0.125*inch)             # bottom margin
@@ -240,7 +240,12 @@ if __name__ == "__main__":
             qrbm.schedule = True
 
         elif arg == "--format":
-            qrbm.badgeformat = sys.argv[index+1]
+            if sys.argv[index+1] == "B475":
+                qrbm.badgeformat = "B475"
+                qrbm.badgesperpage = 4
+            elif sys.argv[index+1] == "B628":
+                qrbm.badgeformat = "B628"
+                qrbm.badgesperpage = 2
 
         elif arg == "--template":
             qrbm.drawtemplate = True
@@ -323,28 +328,36 @@ if __name__ == "__main__":
             imgfile = "temp.png"
             im.save(imgfile)
 
-            # There seems to be a bug in reportlab.
-            # Strings are drawn in the A4 template even though we've set the pagesize to letter.
-            # Do text positioning based on A4.
-            if pagepos == 0:
-                pos = A4[0]/4, A4[1]-0.625*inch
-            elif pagepos == 1:
-                pos = A4[0]*3/4+0.25*inch, A4[1]-0.625*inch
-            elif pagepos == 2:
-                pos = A4[0]/4, A4[1]/2
-            elif pagepos == 3:
-                pos = A4[0]*3/4+0.25*inch, A4[1]/2
+            if qrbm.badgeformat == "B475":
+                # There seems to be a bug in reportlab.
+                # Strings are drawn in the A4 template even though we've set the pagesize to letter.
+                # Do text positioning based on A4.
+                if pagepos == 0:
+                    pos = A4[0]/4, A4[1]-0.625*inch
+                elif pagepos == 1:
+                    pos = A4[0]*3/4+0.25*inch, A4[1]-0.625*inch
+                elif pagepos == 2:
+                    pos = A4[0]/4, A4[1]/2
+                elif pagepos == 3:
+                    pos = A4[0]*3/4+0.25*inch, A4[1]/2
+
+            elif qrbm.badgeformat == "B628":
+                if pagepos == 0:
+                    pos = A4[0]/4, A4[1]-0.625*inch
+                elif pagepos == 1:
+                    pos = A4[0]*3/4+0.25*inch, A4[1]-0.625*inch
 
             qrbm.drawBadge(pos)
 
-            if pagepos >= 3:
+            badgecount += 1
+            pagepos += 1
+            if pagepos >= qrbm.badgesperpage:
                 if qrbm.drawtemplate:
                     qrbm.drawTemplateLines()
                 qrbm.pdf.save()
-                pagepos = -1
+                pagepos = 0
 
-            pagepos += 1
-            badgecount += 1
+            
 
     if pagepos != 0:
         if qrbm.drawtemplate:
