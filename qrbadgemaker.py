@@ -10,14 +10,13 @@ class qrbadgemaker:
     def __init__(self):
         self.drawtemplate   = False
         self.schedule       = False
-        self.credit         = False
-        self.backside       = False
         self.eventname      = ""
         self.hashtag        = ""
         self.csvfile        = ""
         self.pdf            = ""
         self.badgeformat    = "B475"
         self.badgesperpage  = 4
+
 
     def displayHelp(self):
         print "Usage:"
@@ -27,11 +26,15 @@ class qrbadgemaker:
         print "OPTIONS:"
         print "\t--template\t\tDraw the template lines"
         print "\t--format [B475|B628]\tBadge format to use [Default:B475]"
-        print "\t--credits\t\tDraw a back page with credit & URL."
         print "\t--schedule\t\tDraw a back page with a mini schedule."
         print "\t--event [\"NAME\"|IMAGE]\tSet the event name on the badge."
         print "\t--hashtag \"#HASHTAG\"\tSet the hashtag on the badge."
         print ""
+
+    def newpage(self):
+        self.pdf.save()
+        self.pdf.translate((-3.0/16*inch), (-9.0/32*inch))
+        return
 
     def drawTemplateLines(self):
         global inch
@@ -261,7 +264,7 @@ if __name__ == "__main__":
      
     # Validate options and parameters or display help.
     error = False
-    if qrbm.csvfile == "" and qrbm.backside == False:
+    if qrbm.csvfile == "":
         error = True
     elif qrbm.csvfile != "" and not os.path.exists(qrbm.csvfile):
         print
@@ -287,11 +290,8 @@ if __name__ == "__main__":
     inch = inch * 1.05  # Adjust what defines an inch.
     qrbm.pdf.translate((-3.0/16*inch), (-9.0/32*inch))
 
-    if qrbm.backside:
-        namesdata = [[".",".",".","."],[".",".",".","."],[".",".",".","."],[".",".",".","."]]
-    else:
-        namesfp = open(qrbm.csvfile, 'rb')
-        namesdata = csv.reader(namesfp)
+    namesfp = open(qrbm.csvfile, 'rb')
+    namesdata = csv.reader(namesfp)
 
     pagepos = 0
     badgecount = 0
@@ -343,9 +343,9 @@ if __name__ == "__main__":
 
             elif qrbm.badgeformat == "B628":
                 if pagepos == 0:
-                    pos = A4[0]/4, A4[1]-0.625*inch
+                    pos = 2.25*inch, 6.5*inch
                 elif pagepos == 1:
-                    pos = A4[0]*3/4+0.25*inch, A4[1]-0.625*inch
+                    pos = 6.25*inch, 6.5*inch
 
             qrbm.drawBadge(pos)
 
@@ -354,7 +354,7 @@ if __name__ == "__main__":
             if pagepos >= qrbm.badgesperpage:
                 if qrbm.drawtemplate:
                     qrbm.drawTemplateLines()
-                qrbm.pdf.save()
+                qrbm.newpage()
                 pagepos = 0
 
             
@@ -362,7 +362,7 @@ if __name__ == "__main__":
     if pagepos != 0:
         if qrbm.drawtemplate:
             qrbm.drawTemplateLines()
-        qrbm.pdf.save()
+        qrbm.newpage()
 
     os.remove(imgfile)
 
