@@ -138,7 +138,7 @@ class qrbadgemaker:
 
     def drawSchedule(self,pos):
         x,y = pos
-        y -= 0.60*inch
+        y -= 0.00*inch
         self.pdf.setFont("Helvetica", 11)
 
          # Draw the mini schedule.
@@ -194,11 +194,10 @@ class qrbadgemaker:
                     yoffset = max(yoffset, self.drawStringWrap((x+1.0*inch),y, room3, fonttype, fontsize, 1.0, lineheight))
 
             # Draw the vertical lines in this row
-            if room1 != "":
-                self.pdf.line((x-1.6*inch), (y + lineheight * inch), (x-1.6*inch), (y-yoffset-2))
-            if room2 != "":
+            #if room1 != "":
+            self.pdf.line((x-1.6*inch), (y + lineheight * inch), (x-1.6*inch), (y-yoffset-2))
+            if room2 != "" or room3 != "":
                 self.pdf.line((x-0.35*inch), (y + lineheight * inch), (x-0.35*inch), (y-yoffset-2))
-            if room3 != "":
                 self.pdf.line((x+0.95*inch), (y + lineheight * inch), (x+0.95*inch), (y-yoffset-2))
 
             y -= yoffset
@@ -226,9 +225,9 @@ class qrbadgemaker:
 
         #All day events
         y -= 1.65 * lineheight * inch
-        self.drawStringWrap((x-1.9*inch),y, "The VR Experience: Sign up for sesssions in Room 125", fonttype, fontsize, 4.0, lineheight)
+        self.drawStringWrap((x-1.9*inch),y, "Technology Test Kitchen in Heritage Room.", fonttype, fontsize, 4.0, lineheight)
         y -= lineheight * inch
-        self.drawStringWrap((x-1.9*inch),y, "8:30am - 4:15pm", fonttype, fontsize, 4.0, lineheight)
+        self.drawStringWrap((x-1.9*inch),y, "8:30am - 4:00pm", fonttype, fontsize, 4.0, lineheight)
         return
 
 
