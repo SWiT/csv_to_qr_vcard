@@ -136,7 +136,8 @@ class qrbadgemaker:
         return
 
 
-    def drawSchedule(self):
+    def drawSchedule(self,pos):
+        x,y = pos
         y -= 0.60*inch
         self.pdf.setFont("Helvetica", 11)
 
@@ -177,7 +178,7 @@ class qrbadgemaker:
             yoffset = 0
             # Draw the Start time.
             yoffset = max(yoffset, self.drawStringWrap((x-1.62*inch),y, starttime, "Helvetica", fontsize, 0.4, lineheight, "right"))
-            self.pdf.drawString(x,y, eventname)
+            self.pdf.drawString(x,y, self.eventname)
 
             # Draw the titles of the presentations.
             # Compare to the previous row.
@@ -229,6 +230,28 @@ class qrbadgemaker:
         y -= lineheight * inch
         self.drawStringWrap((x-1.9*inch),y, "8:30am - 4:15pm", fonttype, fontsize, 4.0, lineheight)
         return
+
+
+    def getPosition(self, pagepos):
+        if self.badgeformat == "B475":
+            # There seems to be a bug in reportlab.
+            # Strings are drawn in the A4 template even though we've set the pagesize to letter.
+            # Do text positioning based on A4.
+            if pagepos == 0:
+                pos = A4[0]/4, A4[1]-0.625*inch
+            elif pagepos == 1:
+                pos = A4[0]*3/4+0.25*inch, A4[1]-0.625*inch
+            elif pagepos == 2:
+                pos = A4[0]/4, A4[1]/2
+            elif pagepos == 3:
+                pos = A4[0]*3/4+0.25*inch, A4[1]/2
+
+        elif self.badgeformat == "B628":
+            if pagepos == 0:
+                pos = 2.25*inch, 6.5*inch
+            elif pagepos == 1:
+                pos = 6.25*inch, 6.5*inch
+        return pos
 
 
 if __name__ == "__main__":
@@ -286,85 +309,76 @@ if __name__ == "__main__":
     else:
         qrbm.eventnameusefile = False
 
+    # Initialize the PDF for output
     qrbm.pdf = canvas.Canvas(filename+".pdf", pagesize=letter)
     inch = inch * 1.05  # Adjust what defines an inch.
     qrbm.pdf.translate((-3.0/16*inch), (-9.0/32*inch))
 
-    namesfp = open(qrbm.csvfile, 'rb')
-    namesdata = csv.reader(namesfp)
-
     pagepos = 0
     badgecount = 0
 
-    for row in namesdata:
-        if len(row) <= 0:
-            continue
-
-        if row[0][0] == '#':
-            continue
-
-        firstname = row[0].strip()
-        lastname = row[1].strip()
-        fullname = firstname+" "+lastname
-        institution = row[2].strip()
-        email = row[3].strip()
-
-
-
-        if fullname != "":
-            qrcontent = "BEGIN:VCARD\n"
-            qrcontent += "VERSION:3.0\n"
-            qrcontent += "N:"+fullname+"\n"
-            if institution != "":
-                qrcontent += "ORG:"+institution+"\n"
-            if email != "":
-                qrcontent += "EMAIL:"+email+"\n"
-            qrcontent += "END:VCARD\n"
-
-            qr = qrcode.QRCode(error_correction=qrcode.ERROR_CORRECT_L)
-            qr.add_data(qrcontent)
-            qr.make()
-            im = qr.make_image()
-            imgfile = "temp.png"
-            im.save(imgfile)
-
-            if qrbm.badgeformat == "B475":
-                # There seems to be a bug in reportlab.
-                # Strings are drawn in the A4 template even though we've set the pagesize to letter.
-                # Do text positioning based on A4.
-                if pagepos == 0:
-                    pos = A4[0]/4, A4[1]-0.625*inch
-                elif pagepos == 1:
-                    pos = A4[0]*3/4+0.25*inch, A4[1]-0.625*inch
-                elif pagepos == 2:
-                    pos = A4[0]/4, A4[1]/2
-                elif pagepos == 3:
-                    pos = A4[0]*3/4+0.25*inch, A4[1]/2
-
-            elif qrbm.badgeformat == "B628":
-                if pagepos == 0:
-                    pos = 2.25*inch, 6.5*inch
-                elif pagepos == 1:
-                    pos = 6.25*inch, 6.5*inch
-
-            qrbm.drawBadge(pos)
-
+    if qrbm.schedule:
+        # Draw the schedule on each badge
+        for pagepos in range(0, qrbm.badgesperpage):
+            pos = qrbm.getPosition(pagepos)
+            qrbm.drawSchedule(pos)
             badgecount += 1
-            pagepos += 1
-            if pagepos >= qrbm.badgesperpage:
-                if qrbm.drawtemplate:
-                    qrbm.drawTemplateLines()
-                qrbm.newpage()
-                pagepos = 0
-
-            
-
-    if pagepos != 0:
         if qrbm.drawtemplate:
             qrbm.drawTemplateLines()
         qrbm.newpage()
 
-    os.remove(imgfile)
+    else:
+        # Read the user data and draw each badge on the page.
+        namesfp = open(qrbm.csvfile, 'rb')
+        namesdata = csv.reader(namesfp)
+        for row in namesdata:
+            if len(row) <= 0:
+                continue
+
+            if row[0][0] == '#':
+                continue
+
+            firstname = row[0].strip()
+            lastname = row[1].strip()
+            fullname = firstname+" "+lastname
+            institution = row[2].strip()
+            email = row[3].strip()
+
+            if fullname != "":
+                qrcontent = "BEGIN:VCARD\n"
+                qrcontent += "VERSION:3.0\n"
+                qrcontent += "N:"+fullname+"\n"
+                if institution != "":
+                    qrcontent += "ORG:"+institution+"\n"
+                if email != "":
+                    qrcontent += "EMAIL:"+email+"\n"
+                qrcontent += "END:VCARD\n"
+
+                qr = qrcode.QRCode(error_correction=qrcode.ERROR_CORRECT_L)
+                qr.add_data(qrcontent)
+                qr.make()
+                im = qr.make_image()
+                imgfile = "temp.png"
+                im.save(imgfile)
+
+                pos = qrbm.getPosition(pagepos)
+
+                qrbm.drawBadge(pos)
+
+                badgecount += 1
+                pagepos += 1
+                if pagepos >= qrbm.badgesperpage:
+                    if qrbm.drawtemplate:
+                        qrbm.drawTemplateLines()
+                    qrbm.newpage()
+                    pagepos = 0
+
+        if pagepos != 0:
+            if qrbm.drawtemplate:
+                qrbm.drawTemplateLines()
+            qrbm.newpage()
+
+        os.remove(imgfile)
 
     print
     print str(badgecount)+" Badges created in "+filename+".pdf"
