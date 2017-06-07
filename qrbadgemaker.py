@@ -155,7 +155,7 @@ class qrbadgemaker:
         #open the schedulefile
         self.csvfile
         schedulefp = open(self.csvfile, 'rb')
-        scheduledata = csv.reader(schedulefp)
+        scheduledata = list(csv.reader(schedulefp))
         for index,srow in enumerate(scheduledata):
             if len(srow) <= 0:
                 continue
@@ -168,6 +168,11 @@ class qrbadgemaker:
             room2       = srow[2].strip()
             room3       = srow[3].strip()
 
+            nextrow     = (index + 1) % len(scheduledata)
+            room1next   = scheduledata[nextrow][1].strip()
+            room2next   = scheduledata[nextrow][2].strip()
+            room3next   = scheduledata[nextrow][3].strip()
+
             if index == 0:
                 fonttype = "Helvetica-Bold"
             else:
@@ -175,26 +180,45 @@ class qrbadgemaker:
 
             y -= lineheight * inch
 
+            #Determine if cell has overflow.
+            allrooms = room1overflow = room2overflow = room3overflow = False
+            if room1 == room1next:
+                room1overflow = True
+            if room2 == room2next:
+                room2overflow = True
+            if room3 == room3next:
+                room3overflow = True
+            if room1 != "" and room2 == "" and room3 == "":
+                allrooms = True
+
             yoffset = 0
             # Draw the Start time.
             yoffset = max(yoffset, self.drawStringWrap((x-1.62*inch),y, starttime, "Helvetica", fontsize, 0.4, lineheight, "right"))
             self.pdf.drawString(x,y, self.eventname)
 
             # Draw the titles of the presentations.
-            # Compare to the previous row.
-            if room2 == "" and room3 == "":
-                if room1 != prevroom1:
-                    yoffset = max(yoffset, self.drawStringWrap((x-1.55*inch),y, room1, fonttype, fontsize, 3.5, lineheight))
+            if allrooms:
+                yoffset = max(yoffset, self.drawStringWrap((x-1.55*inch),y, room1, fonttype, fontsize, 3.5, lineheight))
             else:
-                if room1 != prevroom1:
-                    yoffset = max(yoffset, self.drawStringWrap((x-1.5*inch),y, room1, fonttype, fontsize, 1.0, lineheight))
-                if room2 != prevroom2:
-                    yoffset = max(yoffset, self.drawStringWrap((x-0.3*inch),y, room2, fonttype, fontsize, 1.0, lineheight))
-                if room3 != prevroom3:
-                    yoffset = max(yoffset, self.drawStringWrap((x+1.0*inch),y, room3, fonttype, fontsize, 1.0, lineheight))
+                if prevroom1 != room1:
+                    if room1overflow:
+                        self.drawStringWrap((x-1.55*inch),y, room1, fonttype, fontsize, 1.15, lineheight)
+                    else:
+                        yoffset = max(yoffset, self.drawStringWrap((x-1.55*inch),y, room1, fonttype, fontsize, 1.15, lineheight))
+
+                if prevroom2 != room2:
+                    if room2overflow:
+                        self.drawStringWrap((x-0.3*inch),y, room2, fonttype, fontsize, 1.2, lineheight)
+                    else:
+                        yoffset = max(yoffset, self.drawStringWrap((x-0.3*inch),y, room2, fonttype, fontsize, 1.2, lineheight))
+
+                if prevroom3 != room3:
+                    if room3overflow:
+                        self.drawStringWrap((x+0.98*inch),y, room3, fonttype, fontsize, 1.0, lineheight)
+                    else:
+                        yoffset = max(yoffset, self.drawStringWrap((x+0.98*inch),y, room3, fonttype, fontsize, 1.0, lineheight))
 
             # Draw the vertical lines in this row
-            #if room1 != "":
             self.pdf.line((x-1.6*inch), (y + lineheight * inch), (x-1.6*inch), (y-yoffset-2))
             if room2 != "" or room3 != "":
                 self.pdf.line((x-0.35*inch), (y + lineheight * inch), (x-0.35*inch), (y-yoffset-2))
@@ -224,7 +248,7 @@ class qrbadgemaker:
         self.pdf.line((x-2.0*inch), y, (x+2.0*inch), y)
 
         #All day events
-        y -= 1.65 * lineheight * inch
+        y -= 1.1 * lineheight * inch
         self.drawStringWrap((x-1.9*inch),y, "Technology Test Kitchen in Heritage Room.", fonttype, fontsize, 4.0, lineheight)
         y -= lineheight * inch
         self.drawStringWrap((x-1.9*inch),y, "8:30am - 4:00pm", fonttype, fontsize, 4.0, lineheight)
