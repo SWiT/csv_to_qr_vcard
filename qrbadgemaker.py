@@ -142,21 +142,23 @@ class qrbadgemaker:
         self.pdf.setFont("Helvetica", 11)
 
          # Draw the mini schedule.
-        
+        #print "--------"
         self.pdf.setLineWidth(0.5)
         self.pdf.setDash([1,0], 0)
-        lineheight = 0.15
+        lineheight = 0.145
         fontsize = 10
 
         prevroom1   = ""
         prevroom2   = ""
         prevroom3   = ""
+        prevoffset  = 0
 
         #open the schedulefile
         self.csvfile
         schedulefp = open(self.csvfile, 'rb')
         scheduledata = list(csv.reader(schedulefp))
         for index,srow in enumerate(scheduledata):
+            #print lineheight,inch,lineheight*inch
             if len(srow) <= 0:
                 continue
 
@@ -214,9 +216,14 @@ class qrbadgemaker:
 
                 if prevroom3 != room3:
                     if room3overflow:
-                        self.drawStringWrap((x+0.98*inch),y, room3, fonttype, fontsize, 1.0, lineheight)
+                        room3offset = self.drawStringWrap((x+0.98*inch),y, room3, fonttype, fontsize, 1.0, lineheight)
+                        #print "room3offset", room3offset
                     else:
                         yoffset = max(yoffset, self.drawStringWrap((x+0.98*inch),y, room3, fonttype, fontsize, 1.0, lineheight))
+                else:
+                    #print room3, yoffset, room3offset, prevoffset
+                    yoffset = max(yoffset, (room3offset - prevoffset - yoffset))
+                    
 
             # Draw the vertical lines in this row
             self.pdf.line((x-1.6*inch), (y + lineheight * inch), (x-1.6*inch), (y-yoffset-2))
@@ -243,6 +250,8 @@ class qrbadgemaker:
             prevroom1   = room1
             prevroom2   = room2
             prevroom3   = room3
+            prevoffset  = yoffset
+            
 
         # Draw a line after the schedule.
         self.pdf.line((x-2.0*inch), y, (x+2.0*inch), y)
@@ -387,7 +396,7 @@ if __name__ == "__main__":
                 pos = qrbm.getPosition(pagepos)
 
                 qrbm.drawBadge(pos)
-
+                
                 badgecount += 1
                 pagepos += 1
                 if pagepos >= qrbm.badgesperpage:
