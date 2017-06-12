@@ -285,6 +285,24 @@ class qrbadgemaker:
                 pos = 6.25*inch, 6.5*inch
         return pos
 
+    def drawNumber(self, pagepos, number):
+        if self.badgeformat == "B628":
+            lineheight = 0.5
+            fontsize = 24
+
+            if pagepos == 0:
+                x = 2.25*inch
+                y = 9.75*inch
+            elif pagepos == 1:
+                x = 6.25*inch
+                y = 9.75*inch
+
+            self.drawStringWrap(x,y, "VR Experience", "Helvetica", fontsize, 4.0, lineheight, "center")
+            y -= lineheight*inch
+            fontsize = 36
+            self.drawStringWrap(x,y, str(number), "Helvetica", fontsize, 4.0, lineheight, "center")
+        return
+
 
 if __name__ == "__main__":
     #----------------------------
@@ -328,7 +346,7 @@ if __name__ == "__main__":
         error = True
 
     if error:
-        displayHelp()
+        qrbm.displayHelp()
         quit()
 
 
@@ -396,6 +414,9 @@ if __name__ == "__main__":
                 pos = qrbm.getPosition(pagepos)
 
                 qrbm.drawBadge(pos)
+
+                print "Draw Number"
+                qrbm.drawNumber(pagepos, badgecount)
                 
                 badgecount += 1
                 pagepos += 1
@@ -404,6 +425,8 @@ if __name__ == "__main__":
                         qrbm.drawTemplateLines()
                     qrbm.newpage()
                     pagepos = 0
+
+                
 
         if pagepos != 0:
             if qrbm.drawtemplate:
