@@ -287,20 +287,35 @@ class qrbadgemaker:
 
     def drawNumber(self, pagepos, number):
         if self.badgeformat == "B628":
-            lineheight = 0.5
+            lineheight = 0.6
             fontsize = 24
 
             if pagepos == 0:
                 x = 2.25*inch
-                y = 9.75*inch
+                y = 9.55*inch
             elif pagepos == 1:
                 x = 6.25*inch
-                y = 9.75*inch
+                y = 9.55*inch
 
             self.drawStringWrap(x,y, "VR Experience", "Helvetica", fontsize, 4.0, lineheight, "center")
             y -= lineheight*inch
             fontsize = 36
             self.drawStringWrap(x,y, str(number), "Helvetica", fontsize, 4.0, lineheight, "center")
+        return
+
+    def drawTicket(self, pagepos):
+        if self.badgeformat == "B628":
+            lineheight = 0.5
+            fontsize = 20
+
+            if pagepos == 0:
+                x = 3.0*inch
+                y = 7.25*inch
+            elif pagepos == 1:
+                x = 7.0*inch
+                y = 7.25*inch
+
+            self.drawStringWrap(x,y, fullname, "Helvetica", fontsize, 4.0, lineheight, "center")
         return
 
 
@@ -415,8 +430,11 @@ if __name__ == "__main__":
 
                 qrbm.drawBadge(pos)
 
-                print "Draw Number"
+                # Draw Number
                 qrbm.drawNumber(pagepos, badgecount)
+
+                # Draw Ticket
+                qrbm.drawTicket(pagepos)
                 
                 badgecount += 1
                 pagepos += 1
