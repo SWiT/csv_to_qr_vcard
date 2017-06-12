@@ -131,7 +131,7 @@ class qrbadgemaker:
 
         # Draw the hashtag
         self.pdf.setFont("Helvetica-Bold", 17)
-        y = pos[1] - 5.4*inch
+        y = pos[1] - 5.75*inch
         self.pdf.drawCentredString(x,y, self.hashtag)
         return
 
