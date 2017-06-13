@@ -297,10 +297,12 @@ class qrbadgemaker:
                 x = 6.25*inch
                 y = 9.55*inch
 
-            self.drawStringWrap(x,y, "VR Experience", "Helvetica", fontsize, 4.0, lineheight, "center")
+            self.pdf.drawImage("circuits3.png", (x-2.0*inch),(y-1.1*inch), width=4.0*inch, height=1.9*inch, mask='auto')
+
+            self.drawStringWrap(x,(y+0.1*inch), "VR Experience", "Helvetica", fontsize, 4.0, lineheight, "center")
             y -= lineheight*inch
             fontsize = 36
-            self.drawStringWrap(x,y, str(number), "Helvetica", fontsize, 4.0, lineheight, "center")
+            self.drawStringWrap(x,(y+0.1*inch), str(number), "Helvetica", fontsize, 4.0, lineheight, "center")
         return
 
     def drawTicket(self, pagepos):
@@ -315,7 +317,8 @@ class qrbadgemaker:
                 x = 7.0*inch
                 y = 7.25*inch
 
-            self.drawStringWrap(x,y, fullname, "Helvetica", fontsize, 4.0, lineheight, "center")
+            self.pdf.drawImage("test-kitchen-punch-card.tif", (x-2.75*inch),(y-0.75*inch), width=4.0*inch, height=2.0*inch, mask='auto')
+            self.drawStringWrap((x-0.15*inch),(y+0.3*inch), fullname, "Helvetica", fontsize, 4.0, lineheight, "center")
         return
 
 
