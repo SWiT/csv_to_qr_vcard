@@ -65,7 +65,10 @@ class qrbadgemaker:
         yoffset = 0
         self.pdf.setFont(font, fontsize)
         while i < len(textlines):
+            #sys.stdout.write(".")
+            #print textlines
             textwidth = self.pdf.stringWidth(textlines[i], font, fontsize)
+            #print "width:", textwidth/(1*inch), maxwidth
             if textwidth/(1*inch) < maxwidth:
                 if position == "center":
                     self.pdf.drawCentredString(x,y, textlines[i])
@@ -80,16 +83,19 @@ class qrbadgemaker:
                 splitpoint = int(len(textlines[i])/2)
                 try:
                     splitpoint = textlines[i][splitpoint:].index(" ") + splitpoint
+                    
                 except ValueError:
                     try:
                         splitpoint = textlines[i].rfind(" ")
-
+                        
                     except ValueError:
                         print "ERROR: \""+textlines[i]+"\" is too long and can't be split."
                         quit()
-
-                textlines.insert(i+1, textlines[i][splitpoint+1:])
-                textlines[i] = textlines[i][:splitpoint]
+                if splitpoint > 0:
+                    textlines.insert(i+1, textlines[i][splitpoint+1:])
+                    textlines[i] = textlines[i][:splitpoint]
+                else:
+                    i += 1
                 yoffset += lineheight * inch
 
         return yoffset
@@ -260,7 +266,7 @@ class qrbadgemaker:
         y -= 1.1 * lineheight * inch
         self.drawStringWrap((x-1.9*inch),y, "Technology Test Kitchen in Heritage Room.", fonttype, fontsize, 4.0, lineheight)
         y -= lineheight * inch
-        self.drawStringWrap((x-1.9*inch),y, "8:30am - 4:00pm", fonttype, fontsize, 4.0, lineheight)
+        self.drawStringWrap((x-1.9*inch),y, "8:00am - 4:00pm", fonttype, fontsize, 4.0, lineheight)
         return
 
 
@@ -292,10 +298,10 @@ class qrbadgemaker:
 
             if pagepos == 0:
                 x = 2.25*inch
-                y = 9.55*inch
+                y = 9.6125*inch
             elif pagepos == 1:
                 x = 6.25*inch
-                y = 9.55*inch
+                y = 9.6125*inch
 
             self.pdf.drawImage("circuits3.png", (x-2.0*inch),(y-1.1*inch), width=4.0*inch, height=1.9*inch, mask='auto')
 
@@ -312,10 +318,10 @@ class qrbadgemaker:
 
             if pagepos == 0:
                 x = 3.0*inch
-                y = 7.25*inch
+                y = 7.3125*inch
             elif pagepos == 1:
                 x = 7.0*inch
-                y = 7.25*inch
+                y = 7.3125*inch
 
             self.pdf.drawImage("test-kitchen-punch-card.tif", (x-2.75*inch),(y-0.75*inch), width=4.0*inch, height=2.0*inch, mask='auto')
             self.drawStringWrap((x-0.15*inch),(y+0.3*inch), fullname, "Helvetica", fontsize, 4.0, lineheight, "center")
@@ -413,6 +419,7 @@ if __name__ == "__main__":
             email = row[3].strip()
 
             if fullname != "":
+                print fullname
                 qrcontent = "BEGIN:VCARD\n"
                 qrcontent += "VERSION:3.0\n"
                 qrcontent += "N:"+fullname+"\n"
@@ -434,7 +441,7 @@ if __name__ == "__main__":
                 qrbm.drawBadge(pos)
 
                 # Draw Number
-                qrbm.drawNumber(pagepos, badgecount)
+                qrbm.drawNumber(pagepos, badgecount+1)
 
                 # Draw Ticket
                 qrbm.drawTicket(pagepos)
